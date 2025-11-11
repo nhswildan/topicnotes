@@ -59,8 +59,6 @@ th{
 td.name{text-align:left;font-weight:500; background:#fff;}
 td.no{width:40px; background:#fff;}
 td.name{width:140px;}
-
-/* Sticky first 2 columns with proper left offsets */
 th:first-child, td.no {
   position: sticky;
   left: 0;
@@ -68,29 +66,19 @@ th:first-child, td.no {
 }
 th:nth-child(2), td.name {
   position: sticky;
-  left: 40px; /* lebar kolom No */
+  left: 40px;
   z-index:3;
 }
-
-/* Warnanya */
-th:first-child, th:nth-child(2) {
-  background: #f3f4f6; /* header abu-abu */
-}
-td.no, td.name {
-  background: #fff; /* isi sel putih */
-}
-
-/* Rounded corners */
+th:first-child, th:nth-child(2) {background:#f3f4f6;}
+td.no, td.name {background:#fff;}
 th:first-child{border-top-left-radius:var(--radius);}
 th:last-child{border-top-right-radius:var(--radius);}
 tr:last-child td:first-child{border-bottom-left-radius:var(--radius);}
 tr:last-child td:last-child{border-bottom-right-radius:var(--radius);}
-
 .cell{cursor:pointer;user-select:none;border-radius:6px;padding:4px;}
 .cell.check{background:#dbeafe;color:var(--accent);}
 .cell.cross{background:#fee2e2;color:#dc2626;}
 .sum{font-weight:600;}
-
 .fab{
   position:fixed;bottom:24px;right:24px;
   background:var(--accent);color:white;border:none;border-radius:50%;
@@ -101,8 +89,6 @@ tr:last-child td:last-child{border-bottom-right-radius:var(--radius);}
 }
 .fab:hover{transform:scale(1.05);}
 footer{text-align:center;padding:12px;font-size:13px;color:#6b7280;border-top:1px solid var(--border);background:var(--surface);}
-
-/* Print */
 @media print{
   th, td{position: static !important; background:#fff !important;}
   .table-wrap{overflow:visible !important;}
@@ -144,10 +130,12 @@ const STORAGE="penilaian_v3::";
 let state={kelas:CLASSES[0],data:{}};
 let selectedColIndex=null;
 let undoStack=[], redoStack=[];
+
 function pushHistory(){undoStack.push(JSON.stringify(state.data[state.kelas])); if(undoStack.length>30)undoStack.shift(); redoStack=[];}
 function undo(){if(!undoStack.length)return; redoStack.push(JSON.stringify(state.data[state.kelas])); state.data[state.kelas]=JSON.parse(undoStack.pop()); save(); render();}
 function redo(){if(!redoStack.length)return; undoStack.push(JSON.stringify(state.data[state.kelas])); state.data[state.kelas]=JSON.parse(redoStack.pop()); save(); render();}
 function el(id){return document.getElementById(id);}
+
 function init(){
   const tagWrap=el("classTags");
   CLASSES.forEach(cls=>{
@@ -159,16 +147,87 @@ function init(){
     const saved=load(cls);
     state.data[cls]=saved || {headers:Array(10).fill().map((_,i)=>"K"+(i+1)),rows:[]};
   });
+
+  // --- Daftar nama siswa yang dimasukkan otomatis ---
+  const STUDENTS = {
+    "G12 Antropologi": [
+      "Adrian Zaydan Rachman","Aisha Maydina Hakim","Alesha Zahira Surya","Ali Syahreza","Chaitra Mahira Wiwoho",
+      "Erlangga Altareza Lazuardi","Iffa Oktavia Amanda","Kalika Naira Salsabil","Kuntum Anaya Sumarna Putri",
+      "Muhammad Faathir Husin","Nadira Shafaa Alfurqan","Naila Putri Shafira","Veresya Svernaya Puspha Syarif",
+      "Fayyaza Saabira Putri Purnama","Khairullah Emeraldino Yulianto","Pocut Aliska Tsaqif Ellena Alravy"
+    ],
+    "G11 Antropologi 1": [
+      "Ananda Prasetya","Aurel Diah Prameswari","Raihana Khansa Adrina","Alana Mangesti Carissa Putri",
+      "Aldevan Izmayl","Altaf Syahru R","Averroes Milagro Syahfajar","Azzara Tunggadewi Wirawan",
+      "M. Daffa Al-Farisy","Maura Dearesty Putri","Maydicta Azzalya Annisa Putri","Rashiq Nazazka",
+      "Sholah Al-Maqdisi","Fabian Nafis Kurniadi","Malik Alif Djajadiredja","Rafa Fathi Ramadhan","Sara Asyrani Ahza"
+    ],
+    "G11 Antropologi 2": [
+      "M. Nararya Aqhar Hakiekie","Shahlaa Kahmila Zetira","Syifa khalila permadi","Khalylah Arzetty",
+      "Maheswara Baraka Putra Dewabrata","Muhammad Rasya Raditya Wino","Nayyara Vidya Rafani Mulyana",
+      "Sekar Bilqis Celomitha Anggoro","Annaya Zaneta Syabanrahanda","Givanya Clarisa Azzahra","Jannah Alima Yacub"
+    ],
+    "G10 A Geografi": [
+      "Abia Fathirreshad Palupi","Alya Salsabila","Aoki Aqellah","Darrel Khalaffaith Arsyah","Jilan Nadysha Artamefa",
+      "Khaled Meshal Al Hafizh","Khoury Ananda Nasution","Lathifah Raihanum","Malika Agni Althalivie","Noumira Tuah Rachman",
+      "Puteri Alifha Gadji","Shahnaz Humaira Auliaputri","Tubagus Muhammad Darrell"
+    ],
+    "G10B Geografi": [
+      "Aldea Azni Ariefah","Aretha Maritza Adikara","Daffa Firas Ibadurrahman","Kania Widya Kinanthi","Muhamad Amarr Dary Irhamna",
+      "Muhammad Mirza Adhwidyatomo","Muhammad Zakki Al Giffary","Prisha Zanitha R","Qanita Afiqa Fathin","Reiditya Fathi W.",
+      "Rifa Al Insan","Zivanna Karyna Samudra"
+    ],
+    "G10 Inter A Geografi": [
+      "Adistra Firzana Khalfani","Aisha Fayyaz Hariyana","Amanda Rahmadhani Terranea Sebani","Andra Aldanara Nasution",
+      "Audrey Augusta Nadyva","Bagas Prabudi Satya","Bimata Khayru Maulana","Dhowi Kawakibi","Dzakhiera Talyta Rusman Ali",
+      "Gazelle Calya Prameswari","Luddietsach Bani Herviana","Maulia Putri Ramadhani","Mishall Zyva Arisha","Nabil Azfar Taufik",
+      "Namira Putri Sandiova","Nazneen Fathimath Hussain Shiyam","Raffa Aydin Putra Satria","Raghadan Putra Ismail",
+      "Rameero Sadguna Manoppo","Refinka Oktaviona","Thariq Marfadi"
+    ],
+    "G10 Inter B Geografi": [
+      "Adelio Khairy Akmal","Adley Hafiz Danadyaksa","Albeinsy Haziqah Putri Y.","Aleya Khairunnisa Harahap","Almira Zaida Ahadi",
+      "Anargya Sasikirana Ariza","Arlentra Fawwaz Ahmad","Dameer Faadhil Ragadytha Salam","Fakhri Iqbal Tan","Falisha Khalilla",
+      "Fatimah Az Zahra A.","Felisha Inas Rasyiah","Kayla Felisya Hanan","Laksamana Elang Perkasa","Machrizain Al Bintang PM",
+      "Muhammad Ikhsan Chalid","Nakshatra Dattatreya Lazuardy","Nisrina Maritza Zata Alana","Raffa Ibrahim Umam",
+      "Rahagi Raffa Pratama","Senopati Akbar Ritzky","Syafadehra Alsyahirah"
+    ],
+    "G10 Inter A Sosiologi": [
+      "Adistra Firzana Khalfani","Aisha Fayyaz Hariyana","Amanda Rahmadhani Terranea Sebani","Andra Aldanara Nasution",
+      "Audrey Augusta Nadyva","Bagas Prabudi Satya","Bimata Khayru Maulana","Dhowi Kawakibi","Dzakhiera Talyta Rusman Ali",
+      "Gazelle Calya Prameswari","Luddietsach Bani Herviana","Maulia Putri Ramadhani","Mishall Zyva Arisha","Nabil Azfar Taufik",
+      "Namira Putri Sandiova","Nazneen Fathimath Hussain Shiyam","Raffa Aydin Putra Satria","Raghadan Putra Ismail",
+      "Rameero Sadguna Manoppo","Refinka Oktaviona","Thariq Marfadi"
+    ],
+    "G10 Inter B Sosiologi": [
+      "Adelio Khairy Akmal","Adley Hafiz Danadyaksa","Albeinsy Haziqah Putri Y.","Aleya Khairunnisa Harahap","Almira Zaida Ahadi",
+      "Anargya Sasikirana Ariza","Arlentra Fawwaz Ahmad","Dameer Faadhil Ragadytha Salam","Fakhri Iqbal Tan","Falisha Khalilla",
+      "Fatimah Az Zahra A.","Felisha Inas Rasyiah","Kayla Felisya Hanan","Laksamana Elang Perkasa","Machrizain Al Bintang PM",
+      "Muhammad Ikhsan Chalid","Nakshatra Dattatreya Lazuardy","Nisrina Maritza Zata Alana","Raffa Ibrahim Umam",
+      "Rahagi Raffa Pratama","Senopati Akbar Ritzky","Syafadehra Alsyahirah"
+    ]
+  };
+
+  // Isi state.data untuk tiap kelas jika kosong
+  for (const [cls,names] of Object.entries(STUDENTS)){
+    const t = state.data[cls];
+    if (t && t.rows.length === 0){
+      t.rows = names.map(n => ({ name: n, cells: Array(t.headers.length).fill("") }));
+      save();
+    }
+  }
+
+  // bind tombol dan event
   el("addRow").onclick=addRow;
-  el("delRow").onclick=()=>{pushHistory(); state.data[state.kelas].rows.pop(); save(); render();};
+  el("delRow").onclick=()=>{ pushHistory(); state.data[state.kelas].rows.pop(); save(); render(); };
   el("addCol").onclick=addColRightOfSelected;
   el("delCol").onclick=delSelectedCol;
   el("undoBtn").onclick=undo;
   el("redoBtn").onclick=redo;
   el("print").onclick=()=>window.print();
-  document.addEventListener("keydown",e=>{if(e.ctrlKey&&e.key==="z")undo(); if(e.ctrlKey&&e.key==="y")redo();});
+  document.addEventListener("keydown",e=>{ if((e.ctrlKey||e.metaKey)&&e.key==="z"){ e.preventDefault(); undo(); } if((e.ctrlKey||e.metaKey)&&e.key==="y"){ e.preventDefault(); redo(); }});
   render();
 }
+
 function render(){
   document.querySelectorAll(".tag").forEach(t=>t.classList.toggle("active",t.textContent===state.kelas));
   const tbl=state.data[state.kelas];
@@ -181,32 +240,36 @@ function render(){
     if(i>=2 && i<tbl.headers.length+2){
       th.contentEditable=true;
       th.onclick=()=>{selectedColIndex=i-2;};
-      th.oninput=e=>{tbl.headers[i-2]=e.target.textContent; save();};
+      th.oninput=e=>{ tbl.headers[i-2]=e.target.textContent; save(); };
     }
     trh.appendChild(th);
   });
   head.appendChild(trh);
+
   tbl.rows.forEach((r,ri)=>{
     const tr=document.createElement("tr");
     const tdNo=document.createElement("td"); tdNo.className="no"; tdNo.textContent=ri+1; tr.appendChild(tdNo);
-    const tdName=document.createElement("td"); tdName.className="name"; tdName.contentEditable=true; tdName.textContent=r.name||""; tdName.oninput=e=>{r.name=e.target.textContent; save();}; tr.appendChild(tdName);
+    const tdName=document.createElement("td"); tdName.className="name"; tdName.contentEditable=true; tdName.textContent=r.name||""; tdName.oninput=e=>{ r.name=e.target.textContent; save(); }; tr.appendChild(tdName);
     r.cells.forEach((c,ci)=>{
       const td=document.createElement("td");
       const div=document.createElement("div");
       div.className="cell"+(c==="check"?" check":c==="cross"?" cross":"");
       div.textContent=c==="check"?"✔":c==="cross"?"✖":"";
-      div.onclick=()=>{pushHistory(); r.cells[ci]=r.cells[ci]===""?"check":r.cells[ci]==="check"?"cross":""; save(); render();};
+      div.onclick=()=>{ pushHistory(); r.cells[ci]=r.cells[ci]===""?"check":r.cells[ci]==="check"?"cross":""; save(); render(); };
       td.appendChild(div); tr.appendChild(td);
     });
     const tdSum=document.createElement("td"); tdSum.className="sum"; tdSum.textContent=r.cells.filter(x=>x==="check").length; tr.appendChild(tdSum);
     body.appendChild(tr);
   });
 }
-function addRow(){pushHistory(); const t=state.data[state.kelas]; t.rows.push({name:"Nama",cells:Array(t.headers.length).fill("")}); save(); render();}
-function addColRightOfSelected(){pushHistory(); const t=state.data[state.kelas]; const i=selectedColIndex!==null?selectedColIndex+1:t.headers.length; t.headers.splice(i,0,"K"+(t.headers.length+1)); t.rows.forEach(r=>r.cells.splice(i,0,"")); save(); render();}
-function delSelectedCol(){if(selectedColIndex===null)return alert("Klik header kolom yang ingin dihapus dulu!"); pushHistory(); const t=state.data[state.kelas]; t.headers.splice(selectedColIndex,1); t.rows.forEach(r=>r.cells.splice(selectedColIndex,1)); selectedColIndex=null; save(); render();}
-function save(){localStorage.setItem(STORAGE+state.kelas,JSON.stringify(state.data[state.kelas]));}
-function load(k){try{return JSON.parse(localStorage.getItem(STORAGE+k));}catch{return null;}}
+
+function addRow(){ pushHistory(); const t=state.data[state.kelas]; t.rows.push({ name:"Nama", cells: Array(t.headers.length).fill("") }); save(); render(); }
+function addColRightOfSelected(){ pushHistory(); const t=state.data[state.kelas]; const i = selectedColIndex!==null ? selectedColIndex+1 : t.headers.length; t.headers.splice(i,0,"K"+(t.headers.length+1)); t.rows.forEach(r=>r.cells.splice(i,0,"")); save(); render(); }
+function delSelectedCol(){ if(selectedColIndex===null) return alert("Klik header kolom yang ingin dihapus dulu!"); pushHistory(); const t=state.data[state.kelas]; t.headers.splice(selectedColIndex,1); t.rows.forEach(r=>r.cells.splice(selectedColIndex,1)); selectedColIndex=null; save(); render(); }
+
+function save(){ try{ localStorage.setItem(STORAGE+state.kelas, JSON.stringify(state.data[state.kelas])); }catch(e){ console.warn("Gagal menyimpan ke localStorage",e); } }
+function load(k){ try{ return JSON.parse(localStorage.getItem(STORAGE+k)); }catch{return null;} }
+
 init();
 </script>
 </body>
